@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "vad.h"
+#include "vad.h"7
+#include "pav_analysis.h"
 
 const float FRAME_TIME = 10.0F; /* in ms. */
 
