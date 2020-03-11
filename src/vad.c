@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "vad.h"7
+#include "vad.h"
 #include "pav_analysis.h"
 
 const float FRAME_TIME = 10.0F; /* in ms. */
@@ -32,7 +32,7 @@ typedef struct {
  * TODO: Delete and use your own features!
  */
 
-Features compute_features(const float *x, int N) {
+Features compute_features(const float *x, int N, float fm) {
   /*
    * Input: x[i] : i=0 .... N-1 
    * Ouput: computed features
@@ -43,7 +43,10 @@ Features compute_features(const float *x, int N) {
    * For the moment, compute random value between 0 and 1 
    */
   Features feat;
-  feat.zcr = feat.p = feat.am = (float) rand()/RAND_MAX;
+  feat.am = compute_am(x,N);
+  feat.p = compute_power(x,N,fm);
+  feat.zcr = compute_zcr(x,N,fm);
+
   return feat;
 }
 
@@ -84,10 +87,10 @@ VAD_STATE vad(VAD_DATA *vad_data, float *x) {
    * TODO: You can change this, using your own features,
    * program finite state automaton, define conditions, etc.
    */
-
-  Features f = compute_features(x, vad_data->frame_length);
+  
+  Features f = compute_features(x, vad_data->frame_length, vad_data->sampling_rate);
   vad_data->last_feature = f.p; /* save feature, in case you want to show */
-
+  
   switch (vad_data->state) {
   case ST_INIT:
     vad_data->state = ST_SILENCE;
