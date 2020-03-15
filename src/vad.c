@@ -32,15 +32,16 @@ typedef struct {
  * TODO: Delete and use your own features!
  */
 
+float pow_ref=-100;
+float zrc_ref=0;
+int count=0;
+int sov=0; //si es maybe voice estará a 1 y si es maybe silence a 0
+int strikes=0; //numero de tramas por los que no pasara de UNDEF a S o V (en nuestro caso seran 10)
+
 Features compute_features(const float *x, int N, float fm) {
   /*
    * Input: x[i] : i=0 .... N-1 
    * Ouput: computed features
-   */
-  /* 
-   * DELETE and include a call to your own functions
-   *
-   * For the moment, compute random value between 0 and 1 
    */
   Features feat;
   feat.am = compute_am(x,N);
@@ -93,27 +94,85 @@ VAD_STATE vad(VAD_DATA *vad_data, float *x) {
   
   switch (vad_data->state) {
   case ST_INIT:
-    vad_data->state = ST_SILENCE;
+    if(count==0){
+      pow_ref = f.p;
+      zrc_ref = f.zcr;
+    }
+    count++;
+    if(pow_ref < f.p){
+      pow_ref = f.p;
+    }
+    if (zrc_ref < f.zcr){
+      zrc_ref = f.zcr;
+    }
+    if (count > 3){
+      pow_ref = fabs(0.095*pow_ref)+pow_ref;
+      zrc_ref = zrc_ref*1.45;
+      count = 0;
+      vad_data->state = ST_SILENCE;
+    }
+
+
     break;
 
   case ST_SILENCE:
-    if (f.p > 0.95)
-      vad_data->state = ST_VOICE;
+    if (f.p > pow_ref || f.zcr >= zrc_ref){
+      vad_data->state = ST_UNDEF;
+      sov = 1;
+    }
     break;
 
   case ST_VOICE:
-    if (f.p < 0.01)
-      vad_data->state = ST_SILENCE;
+    if (f.p < pow_ref || f.zcr >= zrc_ref)
+      vad_data->state = ST_UNDEF;
+      sov = 0;
     break;
 
   case ST_UNDEF:
+    count++;
+    switch (sov)
+    {
+    case 1: // maybe-voice
+      if (f.p < pow_ref || f.zcr >= zrc_ref){
+        strikes++;
+      }
+      if (strikes >= 2){
+        vad_data->state = ST_SILENCE;
+        count=0;
+        strikes=0;
+      }else if (count >= 5){
+        vad_data->state = ST_VOICE;
+        count=0;
+        strikes=0;
+      }
+      break;
+    
+    case 0: // maybe-silence
+      if (f.p > pow_ref || f.zcr >= zrc_ref){
+        strikes++;
+      }
+      if (strikes >= 2){
+        vad_data->state = ST_VOICE;
+        count=0;
+        strikes=0;
+      }else if (count >= 9){
+        vad_data->state = ST_SILENCE;
+        count=0;
+        strikes=0;
+      }
+      
+      
+      break;
+    }
     break;
   }
 
   if (vad_data->state == ST_SILENCE ||
-      vad_data->state == ST_VOICE)
+      vad_data->state == ST_VOICE){
     return vad_data->state;
-  else
+  }else if(vad_data->state == ST_INIT){
+    return ST_SILENCE;
+  }else
     return ST_UNDEF;
 }
 

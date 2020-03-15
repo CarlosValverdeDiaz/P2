@@ -15,6 +15,7 @@ int main(int argc, char *argv[]) {
   SF_INFO sf_info;
   FILE *vadfile;
   int n_read = 0, i;
+  float *fichero;
 
   VAD_DATA *vad_data;
   VAD_STATE state, last_state;
@@ -71,38 +72,47 @@ int main(int argc, char *argv[]) {
   for (i=0; i< frame_size; ++i) buffer_zeros[i] = 0.0F;
 
   frame_duration = (float) frame_size/ (float) sf_info.samplerate;
-  last_state = ST_UNDEF;
+  last_state = ST_SILENCE;
 
   for (t = last_t = 0; ; t++) { /* For each frame ... */
     /* End loop when file has finished (or there is an error) */
     if  ((n_read = sf_read_float(sndfile_in, buffer, frame_size)) != frame_size) break;
 
-    if (sndfile_out != 0) {
-      /* TODO: copy all the samples into sndfile_out */
-    }
-
     state = vad(vad_data, buffer);
     if (verbose & DEBUG_VAD) vad_show_state(vad_data, stdout);
-
+    
+    if (sndfile_out != 0) {
+      if(last_state == ST_SILENCE) {
+        sf_writef_float(sndfile_out, buffer_zeros, frame_size);
+      } else {
+        sf_writef_float(sndfile_out, buffer, frame_size);
+      }
+    }
     /* TODO: print only SILENCE and VOICE labels */
     /* As it is, it prints UNDEF segments but is should be merge to the proper value */
     if (state != last_state) {
-      if (t != last_t)
-        fprintf(vadfile, "%.5f\t%.5f\t%s\n", last_t * frame_duration, t * frame_duration, state2str(last_state));
+      if(state == ST_UNDEF){
+        if (t != last_t)
+          fprintf(vadfile, "%.5f\t%.5f\t%s\n", last_t * frame_duration, t * frame_duration, state2str(last_state));
+        last_t = t;
+      }
       last_state = state;
-      last_t = t;
     }
 
-    if (sndfile_out != 0) {
-      /* TODO: go back and write zeros in silence segments */
-    }
+    
   }
 
   state = vad_close(vad_data);
   /* TODO: what do you want to print, for last frames? */
   if (t != last_t)
+    if (state == ST_UNDEF){
+      if(last_state == ST_VOICE){
+        state = ST_SILENCE;
+      } else {
+        state = ST_VOICE;
+      }
+    }
     fprintf(vadfile, "%.5f\t%.5f\t%s\n", last_t * frame_duration, t * frame_duration + n_read / (float) sf_info.samplerate, state2str(state));
-
   /* clean up: free memory, close open files */
   free(buffer);
   free(buffer_zeros);
