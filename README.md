@@ -98,7 +98,8 @@ Ejercicios
 - Etiquete manualmente los segmentos de voz y silencio del fichero grabado al efecto. Inserte, a 
   continuación, una captura de `wavesurfer` en la que se vea con claridad la señal temporal, el contorno de
   potencia y la tasa de cruces por cero, junto con el etiquetado manual de los segmentos.
-
+  
+  La imagen captura_wavesurfer.png muestra la señal de partida que hemos grabado y con la que desarrollaremos la práctica de inicio.
 
 - A la vista de la gráfica, indique qué valores considera adecuados para las magnitudes siguientes:
 
@@ -123,13 +124,21 @@ Ejercicios
 
 - Inserte una gráfica en la que se vea con claridad la señal temporal, el etiquetado manual y la detección
   automática conseguida para el fichero grabado al efecto. 
-
+  
+  La imagen etiquetación_automática.png muestra el resultado en formato .vad del programa para nuestro archivo de voz.
 
 - Explique, si existen. las discrepancias entre el etiquetado manual y la detección automática.
+
+Creemos que una posible discrepancia entre el etiquetado manual y la automática es que la manual se basa en criterios subjetivos nuestros, como el momento en que empezamos a oír y entender la palabra, y no necesariamente ese momento es en el que se supera el margen de ruido.
 
 - Evalúe los resultados sobre la base de datos `db.v4` con el script `vad_evaluation.pl` e inserte a 
   continuación las tasas de sensibilidad (*recall*) y precisión para el conjunto de la base de datos (sólo
   el resumen).
+  
+**************** Summary ****************
+Recall V:354.92/384.10 92.40%   Precision V:354.92/416.30 85.25%   F-score V (2)  : 90.88%
+Recall S:211.19/272.58 77.48%   Precision S:211.19/240.38 87.86%   F-score S (1/2): 85.57%
+===> TOTAL: 88.183%
 
 
 ### Trabajos de ampliación
@@ -139,6 +148,8 @@ Ejercicios
 - Si ha desarrollado el algoritmo para la cancelación de los segmentos de silencio, inserte una gráfica en
   la que se vea con claridad la señal antes y después de la cancelación (puede que `wavesurfer` no sea la
   mejor opción para esto, ya que no es capaz de visualizar varias señales al mismo tiempo).
+  
+  la imagen captura de los ceros.png muestra de manera ampliada en wavesurfer cómo las tramas con silencio tienen valor 0 gracias al código introducido en el main.
 
 #### Gestión de las opciones del programa usando `docopt_c`
 
@@ -150,6 +161,8 @@ Ejercicios
 
 - Indique a continuación si ha realizado algún tipo de aportación suplementaria (algoritmos de detección o 
   parámetros alternativos, etc.).
+  
+  hemos añadido la funcionalidad de pasar el valor de los parámetros desde consola, en caso de que así lo desee el usuario.
 
 - Si lo desea, puede realizar también algún comentario acerca de la realización de la práctica que considere
   de interés de cara a su evaluación.
