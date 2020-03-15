@@ -104,10 +104,16 @@ Ejercicios
 
 	* Incremento del nivel potencia en dB, respecto al nivel correspondiente al silencio inicial, para estar
       seguros de que un segmento de señal se corresponde con voz.
+      
+      Consideramos un nivel inicial de ruido como el máximo nivel de ruido de entre las tres primeras tramas
 
 	* Duración mínima razonable de los segmentos de voz y silencio.
+	
+	La duración mínima razonable para las tramas es de 10 ms para poder diferenciar entre silencios y fonemas oclusivos
 
 	* ¿Es capaz de sacar alguna conclusión a partir de la evolución de la tasa de cruces por cero?
+	
+	Se puede saber si es silencio porque el silencio tiende a un número de cruces por 0 relativamente consistente pero quizás la mejor información que podemos obtener de la tasa de cruces por cero es la detección de un sonido como el de la S.
 
 
 ### Desarrollo del detector de actividad vocal
